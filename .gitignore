@@ -1,0 +1,7 @@
+.env
+
+# phpMyAdmin
+phpMyAdmin/.env
+
+# SFTP
+sftp/users.conf

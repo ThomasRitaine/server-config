@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  sftp-server:
+    image: atmoz/sftp:latest
+    container_name: sftp
+    env_file:
+      - ../.env
+    restart: always
+    ports:
+      - 2223:22
+    volumes:
+      - ./users.conf:/etc/sftp/users.conf:ro
+      - ./change_directory_owner.sh:/etc/sftp.d
+      # Mount SSH keys for consistent server fingerprint
+      - ./ssh/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
+      - ./ssh/ssh_host_rsa_key.pub:/etc/ssh/ssh_host_rsa_key.pub
+      - ./ssh/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
+      - ./ssh/ssh_host_ed25519_key.pub:/etc/ssh/ssh_host_ed25519_key.pub
+
+    networks:
+      - proxy
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.sftp.rule=HostSNI(`sftp.${DOMAIN_NAME}`)"
+      - "traefik.tcp.routers.sftp.entrypoints=sftp"
+      - "traefik.tcp.routers.sftp.tls=true"
+      - "traefik.tcp.routers.sftp.tls.certresolver=letsencrypt"
+      - "traefik.tcp.routers.sftp.service=sftp"
+      - "traefik.tcp.services.sftp.loadbalancer.server.port=22"
+
+networks:
+  proxy:
+    external: true
