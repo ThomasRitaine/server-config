@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:5.2
+    image: phpmyadmin/phpmyadmin:latest
     environment:
       - PMA_HOSTS=${PMA_HOSTS_LIST}
       - PMA_ABSOLUTE_URI=https://phpmyadmin.${DOMAIN_NAME}/
