@@ -9,6 +9,7 @@ services:
       - grafana-data:/var/lib/grafana
     restart: unless-stopped
     networks:
+      - default
       - proxy
     labels:
       - "traefik.enable=true"
@@ -28,6 +29,8 @@ services:
     restart: unless-stopped
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - default
 
   # Prometheus providers
 
@@ -38,7 +41,6 @@ services:
     container_name: cadvisor
     ports:
       - "8080:8080"
-    network_mode: host
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -49,6 +51,8 @@ services:
       - /dev/kmsg
     restart: unless-stopped
     privileged: true
+    networks:
+      - default
 
   node_exporter:
     # System metrics provider
@@ -60,6 +64,8 @@ services:
     restart: unless-stopped
     volumes:
       - '/:/host:ro,rslave'
+    networks:
+      - default
 
 volumes:
   grafana-data:
@@ -68,5 +74,6 @@ volumes:
     driver: local
 
 networks:
+  default:
   proxy:
     external: true
