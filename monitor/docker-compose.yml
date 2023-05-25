@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.rule=Host(`monitor.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.grafana.middlewares=dashboard-user-auth@file"
+      # - "traefik.http.routers.grafana.middlewares=dashboard-ipwhitelist@file"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config:/etc/prometheus
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+# Prometheus providers
+
+    cadvisor: # Docker metrics provider
+      # TODO: latest tag is not updated, check latest release https://github.com/google/cadvisor/releases 
+      image: gcr.io/cadvisor/cadvisor:v0.47.0     
+      container_name: cadvisor
+      ports:
+        - "8080:8080"
+      network_mode: host
+      volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:ro
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        - /dev/disk/:/dev/disk:ro
+      devices:
+        - /dev/kmsg
+      restart: unless-stopped
+      privileged: true
+
+    node_exporter: # System metrics provider
+      image: quay.io/prometheus/node-exporter:latest
+      container_name: node_exporter
+      command:
+        - '--path.rootfs=/host'
+      pid: host
+      restart: unless-stopped
+      volumes:
+        - '/:/host:ro,rslave'
+
+volumes:
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
