@@ -17,7 +17,7 @@ http:
     dashboard-user-auth:
       basicAuth:
         users:
-          - "thomas:$$2y$$05$$n2s4uPY58xGOEFEOagqH/uQi.YVomdeA54IXsGmSsE635PzWeo5fi"
+          - "thomas:$6$xyz$cgwmp.Auv2nmAxtksb2pajl9o8N1Y1CK0j2KwEiH0qJOTW0L.qsQ4gR0/U9NtmYWXab69Iz0gJ8o4n7xGSJSs."
 
     # dashboard-ipwhitelist:
     #   ipwhitelist:
