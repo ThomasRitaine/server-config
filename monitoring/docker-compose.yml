@@ -9,28 +9,25 @@ services:
       - grafana-data:/var/lib/grafana
     restart: unless-stopped
     networks:
-      - default
+      - monitoring
       - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.rule=Host(`monitor.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.grafana.rule=Host(`monitoring.${DOMAIN_NAME}`)"
       # - "traefik.http.routers.grafana.middlewares=dashboard-ipwhitelist@file"
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
     volumes:
-      - ./config:/etc/prometheus
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     restart: unless-stopped
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
     networks:
-      - default
+      - monitoring
 
   # Prometheus providers
 
@@ -38,9 +35,6 @@ services:
     # Docker metrics provider
     # TODO: latest tag is not updated, check latest release https://github.com/google/cadvisor/releases 
     image: gcr.io/cadvisor/cadvisor:v0.47.0
-    container_name: cadvisor
-    ports:
-      - "8080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -52,12 +46,11 @@ services:
     restart: unless-stopped
     privileged: true
     networks:
-      - default
+      - monitoring
 
   node_exporter:
-    # System metrics provider
+    # Host metrics provider
     image: quay.io/prometheus/node-exporter:latest
-    container_name: node_exporter
     command:
       - '--path.rootfs=/host'
     pid: host
@@ -65,7 +58,30 @@ services:
     volumes:
       - '/:/host:ro,rslave'
     networks:
-      - default
+      - monitoring
+
+  # Logs gathering
+
+  loki:
+    image: grafana/loki:2.8.2
+    volumes:
+      - ./config/loki.yml:/etc/loki/loki.yml
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki.yml
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  promtail:
+    # Host logs provider
+    image: grafana/promtail:2.8.2
+    volumes:
+      - ./config/promtail.yml:/etc/promtail/promtail.yml
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/promtail.yml
+    networks:
+      - monitoring
 
 volumes:
   grafana-data:
@@ -74,6 +90,7 @@ volumes:
     driver: local
 
 networks:
-  default:
+  monitoring:
+    external: true
   proxy:
     external: true

@@ -11,16 +11,20 @@ services:
       - 80:80
       - 443:443
     volumes:
+      # Mount  server's timezone
+      - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # Access to Docker
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Static config
       - ./traefik.yml:/traefik.yml:ro
-      # Add folder with dynamic configuration yml and certificates
-      - ./certificates:/certificates
+      # Dynamic config
       - ./config:/config
-      # Retrieve logs
-      - ./logs:/var/log/traefik/
+      # SSL certificates
+      - ./certificates:/certificates
     networks:
       - proxy
+      - monitoring
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -32,4 +36,6 @@ services:
 
 networks:
   proxy:
+    external: true
+  monitoring:
     external: true
