@@ -15,7 +15,7 @@ services:
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.phpmyadmin.middlewares=dashboard-user-auth@file"
+      - "traefik.http.routers.phpmyadmin.middlewares=auth-http-admin@file"
       # - "traefik.http.routers.phpmyadmin.middlewares=dashboard-ipwhitelist@file"
 
 networks:

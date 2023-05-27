@@ -40,7 +40,8 @@ providers:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
   file:
-    filename: /config/dynamic.yml
+    directory: /config
+    watch: true
 
 certificatesResolvers:
   letsencrypt:

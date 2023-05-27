@@ -1,0 +1,10 @@
+http:
+  middlewares:
+    auth-http-admin:
+      basicAuth:
+        usersFile: /auth-http-users/admin.htpasswd
+
+    # dashboard-ipwhitelist:
+    #   ipwhitelist:
+    #     sourcerange:
+    #       - "167.114.36.33"

@@ -11,7 +11,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      # Mount  server's timezone
+      # Mount server's timezone
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       # Access to Docker
@@ -19,9 +19,11 @@ services:
       # Static config
       - ./traefik.yml:/traefik.yml:ro
       # Dynamic config
-      - ./config:/config
+      - ./config:/config:ro
       # SSL certificates
       - ./certificates:/certificates
+      # HTTP Auth
+      - ./auth-http-users:/auth-http-users:ro
     networks:
       - proxy
       - monitoring
@@ -30,7 +32,7 @@ services:
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.traefik-secure.entrypoints=websecure"
       - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.traefik-secure.middlewares=dashboard-user-auth@file"
+      - "traefik.http.routers.traefik-secure.middlewares=auth-http-admin@file"
       # - "traefik.http.routers.traefik-secure.middlewares=dashboard-ipwhitelist@file"
       - "traefik.http.routers.traefik-secure.service=api@internal"
 

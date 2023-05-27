@@ -1,4 +1,5 @@
-# Dynamic configuration
+# HTTPS config and middlewares
+
 http:
   middlewares:
     nofloc:
@@ -13,16 +14,6 @@ http:
         stsIncludeSubdomains: true
         stsPreload: true
         stsSeconds: 31536000
-
-    dashboard-user-auth:
-      basicAuth:
-        users:
-          - "thomas:$2y$05$ZT./67m0hijh9jPDOlKRFepjLEFvWhbVLif4CehzJI3hox0KnwsPO"
-
-    # dashboard-ipwhitelist:
-    #   ipwhitelist:
-    #     sourcerange:
-    #       - "167.114.36.33"
 
 tls:
   options:
