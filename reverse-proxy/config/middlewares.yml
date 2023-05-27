@@ -4,6 +4,10 @@ http:
       basicAuth:
         usersFile: /auth-http-users/admin.htpasswd
 
+    auth-http-private-transfer:
+      basicAuth:
+        usersFile: /auth-http-users/private-transfer.htpasswd
+
     # dashboard-ipwhitelist:
     #   ipwhitelist:
     #     sourcerange:
