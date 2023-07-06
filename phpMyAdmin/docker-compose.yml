@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin/phpmyadmin:5.2
     environment:
       - PMA_HOSTS=${PMA_HOSTS_LIST}
       - PMA_ABSOLUTE_URI=https://phpmyadmin.${DOMAIN_NAME}/
@@ -13,11 +13,9 @@ services:
       - phpmyadmin
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
       - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin.${DOMAIN_NAME}`)"
       - "traefik.http.routers.phpmyadmin.middlewares=auth-http-admin@file"
-      # - "traefik.http.routers.phpmyadmin.middlewares=dashboard-ipwhitelist@file"
 
 networks:
   proxy:

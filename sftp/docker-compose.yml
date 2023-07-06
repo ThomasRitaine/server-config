@@ -11,7 +11,7 @@ services:
       - 2223:22
     volumes:
       - ./users.conf:/etc/sftp/users.conf:ro
-      - ./change_directory_owner.sh:/etc/sftp.d
+      - ./sftp.d:/etc/sftp.d
       # Mount SSH keys for consistent server fingerprint
       - ./ssh/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key
       - ./ssh/ssh_host_rsa_key.pub:/etc/ssh/ssh_host_rsa_key.pub

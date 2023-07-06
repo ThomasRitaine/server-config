@@ -1,7 +1,4 @@
 .env
-
-# phpMyAdmin
+backups/.env
 phpMyAdmin/.env
-
-# SFTP
 sftp/users.conf

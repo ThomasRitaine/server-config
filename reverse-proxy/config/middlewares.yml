@@ -8,7 +8,7 @@ http:
       basicAuth:
         usersFile: /auth-http-users/private-transfer.htpasswd
 
-    # dashboard-ipwhitelist:
+    # ipwhitelist-admin:
     #   ipwhitelist:
     #     sourcerange:
     #       - "167.114.36.33"

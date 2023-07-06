@@ -5,7 +5,7 @@ log:
   level: ERROR # DEBUG, INFO, WARNING, ERROR, CRITICAL
   format: common # common, json, logfmt
 
-accesslog:
+accessLog:
   format: common # common, json, logfmt
 
 entryPoints:

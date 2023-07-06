@@ -29,12 +29,10 @@ services:
       - monitoring
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.traefik-secure.entrypoints=websecure"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.traefik-secure.middlewares=auth-http-admin@file"
-      # - "traefik.http.routers.traefik-secure.middlewares=dashboard-ipwhitelist@file"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik-dashboard.middlewares=auth-http-admin@file"
 
 networks:
   proxy:

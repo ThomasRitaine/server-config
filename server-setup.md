@@ -199,3 +199,73 @@
     ```sh
     sudo timedatectl set-timezone Pacific/Tahiti
     ```
+
+### Setup fail2ban
+
+1. Installer le paquet
+    ```sh
+    sudo apt install fail2ban
+    ```
+2. Démarrer le service
+    ```sh
+    sudo systemctl start fail2ban
+    ```
+3. Ajouter au démarrage automatique
+    ```sh
+    sudo systemctl enable fail2ban
+    ```
+4. Vérifier que le service est actif
+    ```sh
+    sudo systemctl status fail2ban
+    ```
+5. Créer le fichier `/etc/fail2ban/jail.d/custom.conf` et ajouter la config custom
+    ```sh
+    sudo vi /etc/fail2ban/jail.d/custom.conf
+    ```
+    ```
+    [DEFAULT]
+    ignoreip = 167.114.36.33
+    findtime = 10m
+    bantime = 12h
+    maxretry = 3
+    ```
+6. Redémarrer le service
+    ```sh
+    sudo systemctl restart fail2ban
+    ```
+
+### Setup ufw firewall
+
+1. S'assurer que le firewall n'est pas actif
+    ```sh
+    sudo ufw disable
+    ```
+2. Ouvrir les ports SSH (22), HTTP (80), HTTPS (443), et Docker SFTP (2223)
+    ```sh
+    sudo ufw allow ssh && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp && sudo ufw allow 2223/tcp
+    ```
+3. Démarrer le firewall et accepter l'opération
+    ```sh
+    sudo ufw enable
+    ```
+3. Vérifier que le firewall est actif
+    ```sh
+    sudo ufw status verbose
+    ```
+
+### Setup AWS CLI
+Nous avons besoin de AWS CLI pour upload les backup sur le storage S3 Wasabi.
+1. Télécharger et installer AWS
+    ```sh
+    sudo apt install unzip
+    cd
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+    rm awscliv2.zip
+    ```
+2. En tant que l'utilisateur `ci-cd`, configurer les accès (renseigner uniquement `AWS Access Key ID` et `AWS Secret Access Key`, laisser le reste vide)
+    ```sh
+    su ci-cd
+    aws configure
+    ```
