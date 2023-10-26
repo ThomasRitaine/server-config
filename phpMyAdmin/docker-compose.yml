@@ -1,10 +1,10 @@
-version: '3.8'
+version: "3.8"
 
 services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2
+    env_file: .env
     environment:
-      - PMA_HOSTS=${PMA_HOSTS_LIST}
       - PMA_ABSOLUTE_URI=https://phpmyadmin.${DOMAIN_NAME}/
       - UPLOAD_LIMIT=100M
     restart: unless-stopped
@@ -13,7 +13,6 @@ services:
       - phpmyadmin
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin.rule=Host(`phpmyadmin.${DOMAIN_NAME}`)"
       - "traefik.http.routers.phpmyadmin.middlewares=auth-http-admin@file"
 
