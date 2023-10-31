@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load environment variables.
-. "$HOME/server-config/backups/.env"
+. "$HOME/server-config/backup/.env"
 
 # Determine the lifecycle - Daily or Monthly.
 DAY_OF_WEEK=$(date +"%u")  # Monday is 1, Sunday is 7.
