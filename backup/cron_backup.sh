@@ -3,6 +3,12 @@
 # Load environment variables.
 . "$HOME/server-config/backup/.env"
 
+# Define a function to log with timestamp.
+log_with_timestamp() {
+    TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+    echo "[$TIMESTAMP] $1"
+}
+
 # Determine the lifecycle - Daily or Monthly.
 DAY_OF_WEEK=$(date +"%u")  # Monday is 1, Sunday is 7.
 if [ "$DAY_OF_WEEK" -eq "7" ]; then
@@ -21,7 +27,7 @@ for APP_DIR in $APPS_DIR/*; do
         
         # Check for the .backup file.
         if [ ! -f "$APP_DIR/.backup" ]; then
-            echo "$APP_NAME: No .backup file, skipping..."
+            log_with_timestamp "$APP_NAME: No .backup file, skipping..."
             continue
         fi
         
@@ -66,16 +72,16 @@ for APP_DIR in $APPS_DIR/*; do
         for VOLUME in "${VOLUMES_TO_BACKUP[@]}"; do
             # Create a temporary directory for the backup.
 
-            echo "$APP_NAME: Backing up $VOLUME..."
+            log_with_timestamp "$APP_NAME: Backing up $VOLUME..."
             docker run --rm -v $VOLUME:/source -v $TMP_DIR:/backup busybox sh -c "cp -R /source /backup/$BACKUP_FILENAME/$VOLUME && chown -R $(id -u):$(id -g) /backup/$BACKUP_FILENAME/$VOLUME"
         done
         
         # Archive all volume backups.
-        echo "$APP_NAME: Creating archive..."
+        log_with_timestamp "$APP_NAME: Creating archive..."
         tar -czf $BACKUP_FILEPATH -C $TMP_DIR .
 
         # Push to S3.
-        echo "$APP_NAME: Pushing to S3..."
+        log_with_timestamp "$APP_NAME: Pushing to S3..."
         /usr/local/bin/aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$APP_NAME/$LIFECYCLE/ --endpoint-url=$S3_ENDPOINT --quiet
 
         # Clean up local older archives (keep the latest).
@@ -84,6 +90,6 @@ for APP_DIR in $APPS_DIR/*; do
         # Cleanup the temporary directory.
         rm -rf $TMP_DIR
 
-        echo "$APP_NAME: Backup complete."
+        log_with_timestamp "$APP_NAME: Backup complete."
     fi
 done
