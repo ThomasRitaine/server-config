@@ -76,7 +76,7 @@ for APP_DIR in $APPS_DIR/*; do
 
         # Push to S3.
         echo "$APP_NAME: Pushing to S3..."
-        aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$APP_NAME/$LIFECYCLE/ --endpoint-url=$S3_ENDPOINT --quiet
+        /usr/local/bin/aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$APP_NAME/$LIFECYCLE/ --endpoint-url=$S3_ENDPOINT --quiet
 
         # Clean up local older archives (keep the latest).
         find $APP_DIR -type f -name "$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
