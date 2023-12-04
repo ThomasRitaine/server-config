@@ -9,10 +9,10 @@ log_with_timestamp() {
     echo "[$TIMESTAMP] $1"
 }
 
-# Determine the lifecycle - Daily or Monthly.
+# Determine the lifecycle - Daily or Weekly.
 DAY_OF_WEEK=$(date +"%u")  # Monday is 1, Sunday is 7.
 if [ "$DAY_OF_WEEK" -eq "7" ]; then
-    LIFECYCLE="monthly"
+    LIFECYCLE="weekly"
 else
     LIFECYCLE="daily"
 fi
@@ -61,7 +61,7 @@ for APP_DIR in $APPS_DIR/*; do
         fi
 
         TIMESTAMP=$(date +"%Y-%m-%d-%H-%M")
-        BACKUP_FILENAME="$APP_NAME-$TIMESTAMP"
+        BACKUP_FILENAME="$LIFECYCLE-$APP_NAME-$TIMESTAMP"
         BACKUP_FILEPATH="$APP_DIR/$BACKUP_FILENAME.tar.gz"
 
         TMP_DIR=$(mktemp -d)
@@ -70,8 +70,6 @@ for APP_DIR in $APPS_DIR/*; do
 
         # Backup and archive selected volumes.
         for VOLUME in "${VOLUMES_TO_BACKUP[@]}"; do
-            # Create a temporary directory for the backup.
-
             log_with_timestamp "$APP_NAME: Backing up $VOLUME..."
             docker run --rm -v $VOLUME:/source -v $TMP_DIR:/backup busybox sh -c "cp -R /source /backup/$BACKUP_FILENAME/$VOLUME && chown -R $(id -u):$(id -g) /backup/$BACKUP_FILENAME/$VOLUME"
         done
@@ -85,7 +83,7 @@ for APP_DIR in $APPS_DIR/*; do
         /usr/local/bin/aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$APP_NAME/$LIFECYCLE/ --endpoint-url=$S3_ENDPOINT --quiet
 
         # Clean up local older archives (keep the latest).
-        find $APP_DIR -type f -name "$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
+        find $APP_DIR -type f -name "*-$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
         
         # Cleanup the temporary directory.
         rm -rf $TMP_DIR
