@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  cloudbeaver:
+    image: dbeaver/cloudbeaver-ce:latest
+    restart: unless-stopped
+    volumes:
+      - ./workspace:/opt/cloudbeaver/workspace
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cloudbeaver.rule=Host(`dbeaver.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.cloudbeaver.middlewares=auth-http-admin@file"
+
+networks:
+  proxy:
+    external: true
+  dbeaver:
+    external: true
