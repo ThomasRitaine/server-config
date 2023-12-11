@@ -61,7 +61,7 @@ for APP_DIR in $APPS_DIR/*; do
         fi
 
         TIMESTAMP=$(date +"%Y-%m-%d-%H-%M")
-        BACKUP_FILENAME="$LIFECYCLE-$APP_NAME-$TIMESTAMP"
+        BACKUP_FILENAME="$APP_NAME-$TIMESTAMP"
         BACKUP_FILEPATH="$APP_DIR/$BACKUP_FILENAME.tar.gz"
 
         TMP_DIR=$(mktemp -d)
@@ -80,10 +80,10 @@ for APP_DIR in $APPS_DIR/*; do
 
         # Push to S3.
         log_with_timestamp "$APP_NAME: Pushing to S3..."
-        /usr/local/bin/aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$APP_NAME/$LIFECYCLE/ --endpoint-url=$S3_ENDPOINT --quiet
+        /usr/local/bin/aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$LIFECYCLE/$APP_NAME/ --endpoint-url=$S3_ENDPOINT --quiet
 
         # Clean up local older archives (keep the latest).
-        find $APP_DIR -type f -name "*-$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
+        find $APP_DIR -type f -name "$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
         
         # Cleanup the temporary directory.
         rm -rf $TMP_DIR
