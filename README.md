@@ -13,7 +13,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/ThomasRitaine/server-config">
-    <img src="docs/image/logo.webp" alt="Logo" style="width:100%;max-width:175px;">
+    <img src="docs/image/logo.webp" alt="Logo" width="175" height="175">
   </a>
 
 <h3 align="center">Server Config</h3>
