@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load environment variables.
-. "$HOME/server-config/backup/.env"
+. "$HOME/server-config/.env"
 
 # Define a function to log with timestamp.
 log_with_timestamp() {

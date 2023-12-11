@@ -1,4 +1,1 @@
 .env
-backup/.env
-phpMyAdmin/.env
-sftp/users.conf
