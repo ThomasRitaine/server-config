@@ -1,7 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
@@ -10,10 +9,10 @@ services:
     restart: unless-stopped
     networks:
       - monitoring
-      - proxy
+      - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.rule=Host(`monitoring.${DOMAIN_NAME}`)"
       # - "traefik.http.routers.grafana.middlewares=dashboard-ipwhitelist@file"
@@ -33,7 +32,7 @@ services:
 
   cadvisor:
     # Docker metrics provider
-    # TODO: latest tag is not updated, check latest release https://github.com/google/cadvisor/releases 
+    # TODO: latest tag is not updated, check latest release https://github.com/google/cadvisor/releases
     image: gcr.io/cadvisor/cadvisor:v0.47.0
     volumes:
       - /:/rootfs:ro
@@ -52,11 +51,11 @@ services:
     # Host metrics provider
     image: quay.io/prometheus/node-exporter:latest
     command:
-      - '--path.rootfs=/host'
+      - "--path.rootfs=/host"
     pid: host
     restart: unless-stopped
     volumes:
-      - '/:/host:ro,rslave'
+      - "/:/host:ro,rslave"
     networks:
       - monitoring
 
@@ -93,5 +92,5 @@ volumes:
 networks:
   monitoring:
     external: true
-  proxy:
+  traefik:
     external: true

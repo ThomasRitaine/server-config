@@ -7,14 +7,14 @@ services:
     volumes:
       - ./workspace:/opt/cloudbeaver/workspace
     networks:
-      - proxy
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cloudbeaver.rule=Host(`dbeaver.${DOMAIN_NAME}`)"
       - "traefik.http.routers.cloudbeaver.middlewares=auth-http-admin@file"
 
 networks:
-  proxy:
+  traefik:
     external: true
   dbeaver:
     external: true

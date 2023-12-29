@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   traefik:
@@ -25,7 +25,7 @@ services:
       # HTTP Auth
       - ./auth-http-users:/auth-http-users:ro
     networks:
-      - proxy
+      - traefik
       - monitoring
     labels:
       - "traefik.enable=true"
@@ -35,7 +35,7 @@ services:
       - "traefik.http.routers.traefik-dashboard.middlewares=auth-http-admin@file"
 
 networks:
-  proxy:
+  traefik:
     external: true
   monitoring:
     external: true

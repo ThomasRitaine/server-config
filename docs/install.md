@@ -19,7 +19,7 @@
 4. **Docker Network Creation**: Set up Docker networks for your applications and the Traefik proxy.
 
    ```sh
-   docker network create proxy && docker network create dbeaver
+   docker network create traefik && docker network create dbeaver
    ```
 
 5. **Reverse Proxy Startup**: Deploy Traefik using its Docker Compose file to handle incoming requests and route them to the correct containers.
