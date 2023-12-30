@@ -151,14 +151,15 @@ version: "3.8"
 services:
   webapp:
     image: nginx
+    networks:
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.webapp.rule=Host(`webapp.${DOMAIN_NAME}`)"
 
 networks:
-  default:
-    external:
-      name: proxy
+  traefik:
+    external: true
 ```
 
 Replace `webapp` and `nginx` with your application's service name and image, and update the `DOMAIN_NAME` variable accordingly.
