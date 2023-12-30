@@ -93,6 +93,12 @@
    sudo apt-get install jq
    ```
 
+4. Update the timezone.
+
+   ```sh
+   sudo timedatectl set-timezone Europe/Paris
+   ```
+
 ### Setup Fail2Ban
 
 1. **Install the Fail2Ban Package**:

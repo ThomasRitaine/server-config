@@ -37,7 +37,7 @@
    Add the following lines to automate backups:
 
    ```vim
-   0 2 * * * /home/app-manager/server-config/backup/cron_backup.sh
+   0 2 * * * /home/app-manager/server-config/backup/cron_backup.sh >> /home/app-manager/server-config/backup/logs/cron_run.log 2>&1
    ```
 
 7. **Log Rotation with Logrotate**: Set up `logrotate` to manage log file rotation and archiving. This prevents log files from consuming too much disk space.
