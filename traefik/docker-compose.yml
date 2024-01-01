@@ -34,6 +34,27 @@ services:
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik-dashboard.middlewares=auth-http-admin@file"
 
+  error-pages:
+    image: tarampampam/error-pages:2.26
+    depends_on:
+      - traefik
+    environment:
+      TEMPLATE_NAME: matrix
+      READ_BUFFER_SIZE: 6144
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.error-pages.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.error-pages.priority=1"
+      - "traefik.http.routers.error-pages.middlewares=error-pages"
+
+      # "errors" middleware settings
+      - "traefik.http.middlewares.error-pages.errors.status=400-599"
+      - "traefik.http.middlewares.error-pages.errors.service=error-pages"
+      - "traefik.http.middlewares.error-pages.errors.query=/{status}.html"
+      - "traefik.http.services.error-pages.loadbalancer.server.port=8080"
+
 networks:
   traefik:
     external: true
