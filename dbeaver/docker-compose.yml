@@ -2,12 +2,13 @@ version: "3.8"
 
 services:
   cloudbeaver:
-    image: dbeaver/cloudbeaver-ce:latest
+    image: dbeaver/cloudbeaver:latest
     restart: unless-stopped
     volumes:
       - ./workspace:/opt/cloudbeaver/workspace
     networks:
       - traefik
+      - dbeaver
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cloudbeaver.rule=Host(`dbeaver.${DOMAIN_NAME}`)"
