@@ -28,7 +28,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Hostname
-  networking.hostName = "vps-8karm.thomas.ritaine.com";
+  networking.hostName = "vps-8karm";
 
   # Timezone and locale
   time.timeZone = "Europe/Paris";
