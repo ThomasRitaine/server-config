@@ -98,7 +98,6 @@ in
   # Enable Docker service
   virtualisation.docker = {
     enable = true;
-    enableDockerDaemon = true;
   };
 
   # Enable fail2ban
