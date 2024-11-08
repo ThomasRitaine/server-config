@@ -60,8 +60,7 @@ in
       extraGroups = [ "wheel" "docker" ];
       shell = pkgs.zsh;
       openssh.authorizedKeys.keys = [
-        # Replace this with the actual public key
-        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ... the public key ..."
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFDBWxSC0X5OEFoc+DK8ZmWrDERNQwGzUNG8261IedI Personal VPS ssh key for user thomas"
       ];
     };
     "app-manager" = {
@@ -71,8 +70,7 @@ in
       extraGroups = [ "docker" ];
       shell = pkgs.zsh;
       openssh.authorizedKeys.keys = [
-        # Replace this with the actual public key
-        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ... the public key ..."
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhhJyyQRqM+Bq7vBrzwrZIr1hnEbmfrzYXU5kXHIMCm Personal VPS ssh key for user app-manager"
       ];
     };
   };
