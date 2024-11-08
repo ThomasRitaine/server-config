@@ -126,7 +126,7 @@ in
     enableAutosuggestions = true;
     enableSyntaxHighlighting = true;
 
-    extraInit = ''
+    interactiveShellInit = ''
       # Load aliases and Starship from my personal terminal repo
       export TERMINAL_REPO_DIR="/opt/terminal"
       if [ -d "$TERMINAL_REPO_DIR" ]; then
@@ -138,7 +138,6 @@ in
   # Enable Starship prompt
   programs.starship = {
     enable = true;
-    enableZshIntegration = true;
   };
 
   # Swap space configuration (optional)
