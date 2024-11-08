@@ -6,7 +6,7 @@ let
     owner = "ThomasRitaine";
     repo = "terminal";
     rev = "main";
-    sha256 = "13n0w13qldjwl6hvn61ypnyg6hxgqrv8pd6bp1m48awcxlk06483";
+    sha256 = "0k1gc6vn1qmxxnkgb23kpnxa4dsncp7xwc96bsxshxps41xpxpjx";
   };
 
   # Package the terminal configuration for installation
