@@ -146,16 +146,12 @@ in
   ];
 
   # Activation script to clone the server-config repository
-  system.activationScripts.cloneServerConfig = {
-    text = ''
-      if [ ! -d /home/app-manager/server-config ]; then
-        echo "Cloning server-config repository..."
-        mkdir -p /home/app-manager
-        chown app-manager:app-manager /home/app-manager
-        sudo -u app-manager git clone https://github.com/ThomasRitaine/server-config.git /home/app-manager/server-config
-      fi
-    '';
-    deps = [ pkgs.git ];
-  };
+  system.activationScripts.cloneServerConfig.text = ''
+    if [ ! -d /home/app-manager/server-config ]; then
+      echo "Cloning server-config repository..."
+      mkdir -p /home/app-manager
+      chown app-manager:app-manager /home/app-manager
+      sudo -u app-manager git clone https://github.com/ThomasRitaine/server-config.git /home/app-manager/server-config
+    fi
+  '';
 }
-
