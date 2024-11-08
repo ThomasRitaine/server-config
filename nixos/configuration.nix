@@ -92,7 +92,7 @@ in
     jq
     zsh
     starship
-    ${terminalConfig}
+    terminalConfig
   ];
 
   # Enable Docker service
