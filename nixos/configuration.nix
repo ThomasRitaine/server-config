@@ -103,16 +103,15 @@ in
   # Enable fail2ban
   services.fail2ban = {
     enable = true;
-    filters = {
-      sshd = "${pkgs.fail2ban}/etc/fail2ban/filter.d/sshd.conf";
-    };
     jails = {
       sshd = {
-        enable = true;
-        port = "ssh";
-        filter = "sshd";
-        logPath = "/var/log/auth.log";
-        maxRetry = 5;
+        enabled = true;
+        settings = {
+          port = "ssh";
+          filter = "sshd";
+          logpath = "/var/log/auth.log";
+          maxretry = "5";
+        };
       };
     };
   };
