@@ -1,57 +1,41 @@
 { config, pkgs, ... }:
 
-let
-  # Fetch the terminal configuration repository
-  terminalRepo = pkgs.fetchFromGitHub {
-    owner = "ThomasRitaine";
-    repo = "terminal";
-    rev = "main";
-    sha256 = "0k1gc6vn1qmxxnkgb23kpnxa4dsncp7xwc96bsxshxps41xpxpjx";
-  };
-
-  # Package the terminal configuration for installation
-  terminalConfig = pkgs.stdenv.mkDerivation {
-    name = "terminal-config";
-    src = terminalRepo;
-    phases = [ "installPhase" ];
-    installPhase = ''
-      mkdir -p $out/opt/terminal
-      cp -r $src/* $out/opt/terminal/
-    '';
-  };
-in
 {
   imports = [ ./hardware-configuration.nix ];
 
-  # Boot loader settings for ARM64
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  system.stateVersion = "24.05";
 
-  # Hostname
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    device = "nodev";
+    efiInstallAsRemovable = true;
+  };
+  boot.loader.efi.canTouchEfiVariables = false;
+
   networking.hostName = "vps-8karm";
 
-  # Timezone and locale
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "fr";
 
-  # Networking and firewall
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 80 443 ];
     allowPing = false;
   };
 
-  # SSH configuration
   services.openssh = {
     enable = true;
-    passwordAuthentication = false;
-    permitRootLogin = "no";
-    challengeResponseAuthentication = false;
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+      ChallengeResponseAuthentication = false;
+    };
   };
 
-  # Users configuration
-  users.mutableUsers = false;  # Ensure users are managed declaratively
+  users.mutableUsers = false;
+  users.defaultUserShell = pkgs.zsh;
   users.users = {
     thomas = {
       isNormalUser = true;
@@ -75,30 +59,23 @@ in
     };
   };
 
-  # Require password for sudo
   security.sudo = {
     enable = true;
     wheelNeedsPassword = true;
   };
 
-  # System packages to install
   environment.systemPackages = with pkgs; [
     git
     docker
     docker-compose
     awscli2
     jq
-    zsh
     starship
-    terminalConfig
+    zsh
   ];
 
-  # Enable Docker service
-  virtualisation.docker = {
-    enable = true;
-  };
+  virtualisation.docker.enable = true;
 
-  # Enable fail2ban
   services.fail2ban = {
     enable = true;
     jails = {
@@ -114,42 +91,121 @@ in
     };
   };
 
-  # Zsh and shell configuration
   programs.zsh = {
     enable = true;
+    promptInit = "";
+
     ohMyZsh = {
       enable = true;
-      plugins = [ "git" "zsh-autosuggestions" "you-should-use" "zsh-syntax-highlighting" ];
+      theme = "robbyrussell";
+      plugins = [
+        "aws"
+        "zsh-autosuggestions"
+        "you-should-use"
+        "zsh-syntax-highlighting"
+      ];
     };
-    enableAutosuggestions = true;
-    enableSyntaxHighlighting = true;
+
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
 
     interactiveShellInit = ''
+      export ZSH=${pkgs.oh-my-zsh}/share/oh-my-zsh/
+
+      ZSH_THEME="robbyrussell"
+      plugins=(
+        aws
+        zsh-autosuggestions
+        you-should-use
+        zsh-syntax-highlighting
+      )
+
+      source $ZSH/oh-my-zsh.sh
+
+
+      #====================================
+      #======== LOAD CUSTOM CONFIG ========
+      #====================================
+
       # Load aliases and Starship from my personal terminal repo
       export TERMINAL_REPO_DIR="/opt/terminal"
       if [ -d "$TERMINAL_REPO_DIR" ]; then
-          source "$TERMINAL_REPO_DIR/init.sh"
+        source "$TERMINAL_REPO_DIR/init.sh"
       fi
     '';
   };
 
-  # Enable Starship prompt
-  programs.starship = {
-    enable = true;
-  };
-
-  # Swap space configuration (optional)
   swapDevices = [
-    { device = "/swapfile"; size = 8192; }  # 8GB swap file
+    { device = "/swapfile"; size = 8192; }
   ];
 
-  # Activation script to clone the server-config repository
+  system.activationScripts.cloneTerminalRepo.text = ''
+    if [ ! -d /opt/terminal ]; then
+      echo "Cloning terminal repository to /opt/terminal..."
+      ${pkgs.git}/bin/git clone https://github.com/ThomasRitaine/terminal.git /opt/terminal
+      chown -R root:root /opt/terminal
+      chmod -R 755 /opt/terminal
+    fi
+  '';
+
   system.activationScripts.cloneServerConfig.text = ''
     if [ ! -d /home/app-manager/server-config ]; then
       echo "Cloning server-config repository..."
       mkdir -p /home/app-manager
-      chown app-manager:app-manager /home/app-manager
-      sudo -u app-manager git clone https://github.com/ThomasRitaine/server-config.git /home/app-manager/server-config
+      ${pkgs.git}/bin/git clone https://github.com/ThomasRitaine/server-config.git /home/app-manager/server-config
+      chown -R app-manager:app-manager /home/app-manager
     fi
   '';
+
+  systemd.tmpfiles.rules = [
+    "d /home/app-manager/applications 0755 app-manager app-manager -"
+  ];
+
+  services.logrotate = {
+    enable = true;
+    settings = {
+      header = {
+        missingok = true;
+        notifempty = true;
+        compress = true;
+        daily = true;
+        rotate = 7;
+      };
+
+      "/home/app-manager/applications/*/logs/*.log" = {
+        su = "app-manager app-manager";
+        rotate = 7;
+        compress = true;
+        notifempty = true;
+        copytruncate = true;
+      };
+
+      "/home/app-manager/server-config/traefik/logs/*.log" = {
+        su = "app-manager app-manager";
+        rotate = 7;
+        compress = true;
+        notifempty = true;
+        copytruncate = true;
+      };
+    };
+  };
+
+  systemd.services.backup = {
+    description = "Run the backup script for app-manager";
+    serviceConfig = {
+      Type = "oneshot";
+      User = "app-manager";
+      ExecStart = "${pkgs.bash}/bin/bash /home/app-manager/server-config/backup/cron_backup.sh";
+      StandardOutput = "append:/home/app-manager/server-config/backup/logs/cron_run.log";
+      StandardError = "append:/home/app-manager/server-config/backup/logs/cron_run.log";
+    };
+  };
+
+  systemd.timers.backup = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
 }
