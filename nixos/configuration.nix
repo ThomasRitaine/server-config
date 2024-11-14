@@ -5,12 +5,7 @@
 
   system.stateVersion = "24.05";
 
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = true;
-    device = "nodev";
-    efiInstallAsRemovable = true;
-  };
+  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
   networking.hostName = "vps-8karm";
@@ -34,7 +29,7 @@
     };
   };
 
-  users.mutableUsers = false;
+  users.mutableUsers = true;
   users.defaultUserShell = pkgs.zsh;
   users.users = {
     thomas = {
@@ -72,6 +67,8 @@
     jq
     starship
     zsh
+    cacert
+    neovim
   ];
 
   virtualisation.docker.enable = true;
