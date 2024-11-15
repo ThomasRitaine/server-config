@@ -62,16 +62,30 @@
   environment.systemPackages = with pkgs; [
     git
     docker
-    docker-compose
     awscli2
     jq
     starship
     zsh
-    cacert
     neovim
   ];
 
   virtualisation.docker.enable = true;
+
+  environment.etc."opt/terminal" = {
+    source = pkgs.fetchgit {
+      url = "https://github.com/ThomasRitaine/terminal.git";
+      rev = "HEAD";
+      sha256 = "sha256-Xd5+eyD6dqi7XiYx3s9lVjeiur1ziPWm7b3iYLdhL0w=";
+    };
+  };
+
+  environment.etc."home/app-manager/server-config" = {
+    source = pkgs.fetchgit {
+      url = "https://github.com/ThomasRitaine/server-config.git";
+      rev = "HEAD";
+      sha256 = "sha256-LU3rKmwRhXMtopYLJJdQHXV96Q/+HKZYf/XCHxfrF3I=";
+    };
+  };
 
   services.fail2ban = {
     enable = true;
@@ -90,102 +104,19 @@
 
   programs.zsh = {
     enable = true;
-    promptInit = "";
-
-    ohMyZsh = {
-      enable = true;
-      theme = "robbyrussell";
-      plugins = [
-        "aws"
-        "zsh-autosuggestions"
-        "you-should-use"
-        "zsh-syntax-highlighting"
-      ];
-    };
-
+    enableCompletion = true;
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
-
-    interactiveShellInit = ''
-      export ZSH=${pkgs.oh-my-zsh}/share/oh-my-zsh/
-
-      ZSH_THEME="robbyrussell"
-      plugins=(
-        aws
-        zsh-autosuggestions
-        you-should-use
-        zsh-syntax-highlighting
-      )
-
-      source $ZSH/oh-my-zsh.sh
-
-
-      #====================================
-      #======== LOAD CUSTOM CONFIG ========
-      #====================================
-
-      # Load aliases and Starship from my personal terminal repo
-      export TERMINAL_REPO_DIR="/opt/terminal"
-      if [ -d "$TERMINAL_REPO_DIR" ]; then
-        source "$TERMINAL_REPO_DIR/init.sh"
-      fi
-    '';
   };
+  system.userActivationScripts.zshrc = "echo 'source /opt/terminal/init.sh' > ~/.zshrc";
 
   swapDevices = [
     { device = "/swapfile"; size = 8192; }
   ];
 
-  system.activationScripts.cloneTerminalRepo.text = ''
-    if [ ! -d /opt/terminal ]; then
-      echo "Cloning terminal repository to /opt/terminal..."
-      ${pkgs.git}/bin/git clone https://github.com/ThomasRitaine/terminal.git /opt/terminal
-      chown -R root:root /opt/terminal
-      chmod -R 755 /opt/terminal
-    fi
-  '';
-
-  system.activationScripts.cloneServerConfig.text = ''
-    if [ ! -d /home/app-manager/server-config ]; then
-      echo "Cloning server-config repository..."
-      mkdir -p /home/app-manager
-      ${pkgs.git}/bin/git clone https://github.com/ThomasRitaine/server-config.git /home/app-manager/server-config
-      chown -R app-manager:app-manager /home/app-manager
-    fi
-  '';
-
   systemd.tmpfiles.rules = [
     "d /home/app-manager/applications 0755 app-manager app-manager -"
   ];
-
-  services.logrotate = {
-    enable = true;
-    settings = {
-      header = {
-        missingok = true;
-        notifempty = true;
-        compress = true;
-        daily = true;
-        rotate = 7;
-      };
-
-      "/home/app-manager/applications/*/logs/*.log" = {
-        su = "app-manager app-manager";
-        rotate = 7;
-        compress = true;
-        notifempty = true;
-        copytruncate = true;
-      };
-
-      "/home/app-manager/server-config/traefik/logs/*.log" = {
-        su = "app-manager app-manager";
-        rotate = 7;
-        compress = true;
-        notifempty = true;
-        copytruncate = true;
-      };
-    };
-  };
 
   systemd.services.backup = {
     description = "Run the backup script for app-manager";
@@ -201,8 +132,7 @@
   systemd.timers.backup = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
-      OnCalendar = "daily";
-      Persistent = true;
+      OnCalendar = "02:00";
     };
   };
 }
