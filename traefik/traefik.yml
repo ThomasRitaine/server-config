@@ -57,3 +57,9 @@ metrics:
     addEntryPointsLabels: true
     addRoutersLabels: true
     addServicesLabels: true
+
+experimental:
+  plugins:
+    checkheadersplugin:
+      moduleName: "github.com/dkijkuit/checkheadersplugin"
+      version: "v0.3.1"

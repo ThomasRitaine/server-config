@@ -22,8 +22,6 @@ services:
       - ./config:/config:ro
       # SSL certificates
       - ./certificates:/certificates
-      # HTTP Auth
-      - ./auth-http-users:/auth-http-users:ro
     networks:
       - traefik
       - monitoring
@@ -32,7 +30,7 @@ services:
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.traefik-dashboard.middlewares=auth-http-admin@file"
+      - "traefik.http.routers.traefik-dashboard.middlewares=auth-require-login@file,auth-require-group-admin-vps@file"
 
   error-pages:
     image: tarampampam/error-pages:2.26
