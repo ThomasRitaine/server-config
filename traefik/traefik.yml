@@ -26,9 +26,6 @@ entryPoints:
       tls:
         certResolver: letsencrypt
 
-  sftp:
-    address: :2223
-
   metrics:
     address: :8080
 
