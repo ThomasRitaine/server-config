@@ -1,6 +1,6 @@
 services:
   cloudbeaver:
-    image: dbeaver/cloudbeaver:latest
+    image: dbeaver/cloudbeaver:24
     restart: unless-stopped
     volumes:
       - ./workspace:/opt/cloudbeaver/workspace
