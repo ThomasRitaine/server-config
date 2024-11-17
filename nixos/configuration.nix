@@ -29,15 +29,20 @@
     };
   };
 
-  users.mutableUsers = true;
+  users.mutableUsers = false;
   users.defaultUserShell = pkgs.zsh;
   users.users = {
+    root = {
+      isNormalUser = false;
+      hashedPasswordFile = "/etc/nixos/secrets/root-password";
+    };
     thomas = {
       isNormalUser = true;
       description = "Thomas";
       home = "/home/thomas";
       extraGroups = [ "wheel" "docker" ];
       shell = pkgs.zsh;
+      hashedPasswordFile = "/etc/nixos/secrets/thomas-password";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFDBWxSC0X5OEFoc+DK8ZmWrDERNQwGzUNG8261IedI Personal VPS ssh key for user thomas"
       ];
@@ -48,6 +53,7 @@
       home = "/home/app-manager";
       extraGroups = [ "docker" ];
       shell = pkgs.zsh;
+      hashedPasswordFile = "/etc/nixos/secrets/app-manager-password";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhhJyyQRqM+Bq7vBrzwrZIr1hnEbmfrzYXU5kXHIMCm Personal VPS ssh key for user app-manager"
       ];
@@ -56,7 +62,7 @@
 
   security.sudo = {
     enable = true;
-    wheelNeedsPassword = true;
+    wheelNeedsPassword = false;
   };
 
   environment.systemPackages = with pkgs; [
@@ -83,7 +89,7 @@
     source = pkgs.fetchgit {
       url = "https://github.com/ThomasRitaine/server-config.git";
       rev = "HEAD";
-      sha256 = "sha256-LU3rKmwRhXMtopYLJJdQHXV96Q/+HKZYf/XCHxfrF3I=";
+      sha256 = "sha256-n0L0IFfY9VNPZT/x0ROevgyTPANZ9WKwds/vnpysVsg=";
     };
   };
 
@@ -116,6 +122,7 @@
 
   systemd.tmpfiles.rules = [
     "d /home/app-manager/applications 0755 app-manager app-manager -"
+    "d /etc/nixos/secrets 0700 root root -"
   ];
 
   systemd.services.backup = {
