@@ -8,6 +8,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = false;
 
+  swapDevices = [
+    { device = "/swapfile"; size = 8192; }
+  ];
+
   networking.hostName = "vps-8karm";
 
   time.timeZone = "Europe/Paris";
@@ -62,7 +66,7 @@
 
   security.sudo = {
     enable = true;
-    wheelNeedsPassword = false;
+    wheelNeedsPassword = true;
   };
 
   environment.systemPackages = with pkgs; [
@@ -76,22 +80,6 @@
   ];
 
   virtualisation.docker.enable = true;
-
-  environment.etc."opt/terminal" = {
-    source = pkgs.fetchgit {
-      url = "https://github.com/ThomasRitaine/terminal.git";
-      rev = "HEAD";
-      sha256 = "sha256-Xd5+eyD6dqi7XiYx3s9lVjeiur1ziPWm7b3iYLdhL0w=";
-    };
-  };
-
-  environment.etc."home/app-manager/server-config" = {
-    source = pkgs.fetchgit {
-      url = "https://github.com/ThomasRitaine/server-config.git";
-      rev = "HEAD";
-      sha256 = "sha256-n0L0IFfY9VNPZT/x0ROevgyTPANZ9WKwds/vnpysVsg=";
-    };
-  };
 
   services.fail2ban = {
     enable = true;
@@ -114,16 +102,6 @@
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
   };
-  system.userActivationScripts.zshrc = "echo 'source /opt/terminal/init.sh' > ~/.zshrc";
-
-  swapDevices = [
-    { device = "/swapfile"; size = 8192; }
-  ];
-
-  systemd.tmpfiles.rules = [
-    "d /home/app-manager/applications 0755 app-manager app-manager -"
-    "d /etc/nixos/secrets 0700 root root -"
-  ];
 
   systemd.services.backup = {
     description = "Run the backup script for app-manager";
