@@ -1,7 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    <home-manager/nixos>
+  ];
 
   system.stateVersion = "24.05";
 
@@ -34,7 +37,6 @@
   };
 
   users.mutableUsers = false;
-  users.defaultUserShell = pkgs.zsh;
   users.users = {
     root = {
       isNormalUser = false;
@@ -45,7 +47,6 @@
       description = "Thomas";
       home = "/home/thomas";
       extraGroups = [ "wheel" "docker" ];
-      shell = pkgs.zsh;
       hashedPasswordFile = "/etc/nixos/secrets/thomas-password";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFDBWxSC0X5OEFoc+DK8ZmWrDERNQwGzUNG8261IedI Personal VPS ssh key for user thomas"
@@ -56,7 +57,6 @@
       description = "App Manager";
       home = "/home/app-manager";
       extraGroups = [ "docker" ];
-      shell = pkgs.zsh;
       hashedPasswordFile = "/etc/nixos/secrets/app-manager-password";
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhhJyyQRqM+Bq7vBrzwrZIr1hnEbmfrzYXU5kXHIMCm Personal VPS ssh key for user app-manager"
@@ -81,6 +81,20 @@
 
   virtualisation.docker.enable = true;
 
+  # ZSH setup
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
+  environment.pathsToLink = [ "/share/zsh" ];
+  home-manager.users.root = { pkgs, ... }: {
+    imports = [ ./zsh.nix ];
+  };
+  home-manager.users.thomas = { pkgs, ... }: {
+    imports = [ ./zsh.nix ];
+  };
+  home-manager.users.app-manager = { pkgs, ... }: {
+    imports = [ ./zsh.nix ];
+  };
+
   services.fail2ban = {
     enable = true;
     jails = {
@@ -94,13 +108,6 @@
         };
       };
     };
-  };
-
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    autosuggestions.enable = true;
-    syntaxHighlighting.enable = true;
   };
 
   systemd.services.backup = {
