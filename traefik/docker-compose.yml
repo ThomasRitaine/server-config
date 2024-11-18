@@ -22,7 +22,6 @@ services:
       - ./certificates:/certificates
     networks:
       - traefik
-      - monitoring
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
