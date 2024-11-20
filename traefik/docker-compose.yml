@@ -41,8 +41,8 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.error-pages.rule=HostRegexp(`{host:.+}`)"
-      - "traefik.http.routers.error-pages.priority=1"
+      - "traefik.http.routers.error-pages.rule=HostRegexp(`.+`)"
+      - "traefik.http.routers.error-pages.priority=10"
       - "traefik.http.routers.error-pages.middlewares=error-pages"
 
       # "errors" middleware settings
