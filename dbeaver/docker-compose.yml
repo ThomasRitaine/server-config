@@ -10,7 +10,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cloudbeaver.rule=Host(`dbeaver.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.traefik-dashboard.middlewares=auth-require-login@file,auth-require-group-admin-vps@file"
+      - "traefik.http.routers.cloudbeaver.middlewares=auth-require-login@file,auth-require-group-admin-vps@file"
 
 networks:
   traefik:
