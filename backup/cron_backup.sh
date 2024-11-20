@@ -31,10 +31,20 @@ for APP_DIR in $APPS_DIR/*; do
             continue
         fi
         
-        # Check if docker-compose.prod.yml exists
-        COMPOSE_FILES="-f $APP_DIR/docker-compose.yml"
-        if [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
-            COMPOSE_FILES="$COMPOSE_FILES -f $APP_DIR/docker-compose.prod.yml"
+        # Check for the presence of docker-compose files
+        COMPOSE_FILES=""
+        if [ -f "$APP_DIR/docker-compose.yml" ] && [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
+            # Both files exist
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml"
+        elif [ -f "$APP_DIR/docker-compose.yml" ]; then
+            # Only docker-compose.yml exists
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.yml"
+        elif [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
+            # Only docker-compose.prod.yml exists
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.prod.yml"
+        else
+            log_with_timestamp "$APP_NAME: No docker-compose file found, skipping..."
+            continue
         fi
 
         # Get list of volume names
