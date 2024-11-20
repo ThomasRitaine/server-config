@@ -115,7 +115,7 @@
     serviceConfig = {
       Type = "oneshot";
       User = "app-manager";
-      ExecStart = "${pkgs.bash}/bin/bash /home/app-manager/server-config/backup/cron_backup.sh";
+      ExecStart = "${pkgs.zsh}/bin/zsh /home/app-manager/server-config/backup/cron_backup.sh";
       StandardOutput = "append:/home/app-manager/server-config/backup/logs/cron_run.log";
       StandardError = "append:/home/app-manager/server-config/backup/logs/cron_run.log";
     };
