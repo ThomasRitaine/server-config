@@ -123,6 +123,7 @@
       docker
       jq
       gnutar
+      gzip
       awscli2
     ];
   };
