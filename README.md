@@ -1,6 +1,4 @@
-<a name="readme-top"></a>
-
-<!-- PROJECT SHIELDS -->
+# Server Config
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -13,13 +11,13 @@
 <br />
 <div align="center">
   <a href="https://github.com/ThomasRitaine/server-config">
-    <img src="docs/image/logo.webp" alt="Logo" width="175" height="175">
+    <img src="docs/images/logo.webp" alt="Logo" width="175" height="175">
   </a>
 
 <h3 align="center">Server Config</h3>
 
   <p align="center">
-    A containerized server setup with advanced security and backup features for personal production use.
+    A containerized server setup using NixOS for declarative configuration, advanced security, and backup features for personal production use.
     <br />
     <a href="https://github.com/ThomasRitaine/server-config"><strong>Explore the docs »</strong></a>
     <br />
@@ -52,8 +50,9 @@
     <li><a href="#usage">Usage</a>
       <ul>
         <li><a href="#deploying-apps-with-docker-behind-traefik">Deploying Apps with Docker Behind Traefik</a></li>
-        <li><a href="#creating-http-basic-auth-middleware">Creating HTTP Basic Auth Middleware</a></li>
         <li><a href="#configuring-the-backup-system">Configuring the Backup System</a></li>
+        <li><a href="#accessing-admin-endpoints">Accessing Admin Endpoints</a></li>
+        <li><a href="#custom-error-pages">Custom Error Pages</a></li>
       </ul>
     </li>
     <li><a href="#folder-structure">Folder Structure</a></li>
@@ -69,16 +68,17 @@
 
 ## About The Project
 
-[![File List in terminal][file-list-screenshot]](https://thomas.ritaine.com)
+[![The server's terminal][server-terminal]](https://thomas.ritaine.com)
 
-A containerized server setup with advanced security and backup features for personal production use:
+A containerized server setup using NixOS for declarative configuration, advanced security, and backup features for personal production use:
 
-- **Dockerized Applications**: Each application runs in its own Docker container, ensuring isolation and ease of management.
-- **Advanced Security**: Incorporates SSH key-based logins, TOTP for two-factor authentication, and Fail2Ban for comprehensive server protection.
-- **Automated Backups**: Scheduled backup script to archive and secure designated Docker volumes to cloud storage.
-- **Personal Production Ready**: Designed to deploy and maintain personal web applications securely and efficiently behind Traefik reverse proxy. Automatic HTTPS, configurable HTTP Basic Auth, auto create subdomains and more.
+- **NixOS Declarative Configuration**: Utilizes NixOS for its declarative configuration, providing stability and ease of management for VPS environments.
+- **Dockerized Applications**: Applications run in Docker containers, making deployment easy and ensuring they don't interfere with each other.
+- **Advanced Security**: Incorporates SSH key-based logins and Fail2Ban to enhance server security.
+- **Automated Backups**: Scheduled backup script to archive directories and Docker volumes to any S3-compatible storage.
+- **Single Sign-On (SSO)**: Uses Authentik as an SSO provider for secure access to administrative applications.
+- **Custom Error Handling**: Displays custom error pages instead of default Traefik error pages.
 - **Documentation-Driven**: Detailed installation and setup guides to streamline the server configuration process.
-<!-- - **Monitoring and Management**: Integrated monitoring tools like Netdata within Docker, providing insights into server performance. -->
 
 This setup is tailored for developers looking for a secure and maintainable server environment for their personal projects.
 
@@ -88,9 +88,11 @@ This setup is tailored for developers looking for a secure and maintainable serv
 
 The server configuration leverages a variety of technologies for security, orchestration, and automation:
 
+- [![NixOS][NixOS-shield]][NixOS-url]
 - [![Docker][Docker-shield]][Docker-url]
 - [![Traefik][Traefik-shield]][Traefik-url]
-- [![Let's Encrypt][LetsEncrypt-shield]][LetsEncrypt-url]
+- [![Authentik][Authentik-shield]][Authentik-url]
+- [![Zsh][Zsh-shield]][Zsh-url]
 - [![Bash][Bash-shield]][Bash-url]
 - [![Amazon S3][S3-shield]][S3-url]
 
@@ -100,17 +102,18 @@ The server configuration leverages a variety of technologies for security, orche
 
 ## Getting Started
 
-This project contains all the necessary configurations to set up a secure, containerized server environment for personal production use. The setup involves a series of steps that are detailed in two documents.
+This project contains all the necessary configurations to set up a secure, containerized server environment using NixOS for personal production use.
 
 ### Prerequisites
 
-- A fresh VPS with root access
-- Basic knowledge of Docker, Linux commands, and server security concepts
+- A VPS capable of running NixOS (or a VPS hosting provider that allows you to upload your own ISO image). Personally, I use a [Netcup](https://www.netcup.com/) VPS.
+- Basic knowledge of Docker, Linux commands, and server security concepts.
 
 ### Server Setup
 
-1. **Initial Server Setup**: Follow the steps in `docs/server-setup.md` to prepare your server with the necessary security configurations and user setup.
-2. **Dependencies Installation**: Detailed instructions for installing Docker, setting up firewalls, and other dependencies are provided in the same document.
+1. **Install NixOS on Your VPS**: Follow the NixOS installation guide to set up NixOS on your VPS. The declarative configuration of NixOS is well-suited for stable VPS environments.
+
+2. **Server Configuration**: Configure your server using the provided NixOS configuration files and instructions in `docs/install.md`. This includes setting up users, SSH keys, and necessary services.
 
 ### Project Installation
 
@@ -118,20 +121,19 @@ Once the server is ready, proceed with the installation of this repository by fo
 
 For full installation instructions, please refer to the documentation:
 
-- [Server Setup Guide](docs/server-setup.md)
 - [Installation Guide](docs/install.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Environment Variables
 
-For that setup to work properly, you will need to set several environment variables. These variables should be set in a `.env` file that you create based on the provided `.env.example` file. Here is a list of the required environment variables and their descriptions:
+For this setup to work properly, you will need to set several environment variables. These variables should be set in a `.env` file that you create based on the provided `.env.example` file. Here is a list of the required environment variables and their descriptions:
 
-| Variable Name    | Description                                             | Example Value                        |
-| ---------------- | ------------------------------------------------------- | ------------------------------------ |
-| `DOMAIN_NAME`    | The domain name where your services will be hosted.     | `example.com`                        |
-| `S3_BUCKET_NAME` | The name of the S3 bucket used for backups.             | `my-backup-bucket`                   |
-| `S3_ENDPOINT`    | The endpoint URL for the S3-compatible storage service. | `https://s3.eu-west-2.wasabisys.com` |
+| Variable Name    | Description                                             | Example Value                           |
+| ---------------- | ------------------------------------------------------- | --------------------------------------- |
+| `DOMAIN_NAME`    | The domain name where your services will be hosted.     | `example.com`                           |
+| `S3_BUCKET_NAME` | The name of the S3 bucket used for backups.             | `my-backup-bucket`                      |
+| `S3_ENDPOINT`    | The endpoint URL for the S3-compatible storage service. | `https://s3.eu-central-1.amazonaws.com` |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -143,11 +145,11 @@ Once your server configuration is set up, deploying applications and managing th
 
 ### Deploying Apps with Docker Behind Traefik
 
-To deploy applications behind Traefik, modify the app's Docker Compose file to include the Traefik network and labels. Here's a simplified example:
+Here are two simple examples to deploy apps with Traefik:
+
+#### Example 1: Expose an App
 
 ```yaml
-version: "3.8"
-
 services:
   webapp:
     image: nginx
@@ -155,44 +157,38 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.webapp.rule=Host(`webapp.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.webapp.rule=Host(`webapp.example.com`)"
 
 networks:
   traefik:
     external: true
 ```
 
-Replace `webapp` and `nginx` with your application's service name and image, and update the `DOMAIN_NAME` variable accordingly.
+This configuration makes the app accessible at `https://webapp.example.com` if the DNS record points to your VPS.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+---
 
-### Creating HTTP Basic Auth Middleware
-
-To protect your applications with HTTP Basic Auth:
-
-1. Generate a `.htpasswd` file with your desired username and password, placing it in the `traefik/auth-http-users/` directory.
-2. Define the middleware in `traefik/config/middleware.yml` like so:
-
-```yaml
-http:
-  middlewares:
-    auth-http-scope:
-      basicAuth:
-        usersFile: /auth-http-users/fileName.htpasswd
-```
-
-Replace `fileName.htpasswd` by the actual file name.\
-Also, replace `auth-http-scope` with the scope you want, `auth-http-admin` for example. Then use it as so in the `docker-compose.yml` of the desired app:
+#### Example 2: Protect an App with Authentication
 
 ```yaml
 services:
-  webapp:
+  secure-app:
     image: nginx
+    networks:
+      - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.webapp.rule=Host(`webapp.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.webapp.middlewares=auth-http-scope@file"
+      - "traefik.http.routers.secure-app.rule=Host(`secureapp.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.secure-app.middlewares=auth-require-login@file,auth-require-group-admin-vps@file"
+
+networks:
+  traefik:
+    external: true
 ```
+
+This configuration requires users to authenticate via Authentik and belong to the `admin-vps` group to access `https://secureapp.<DOMAIN_NAME>`.
+
+Replace the service name, image, and `DOMAIN_NAME` as needed. Both examples connect to the Traefik network for reverse proxying.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -200,9 +196,34 @@ services:
 
 To set up backups for your applications:
 
-1. Create a `.backup` file within your application's directory.
-2. List the Docker volumes you want to backup, one per line, or use an asterisk `*` to backup all volumes.
-3. The backup script will handle the creation and storage of archives according to this configuration.
+1. All directories inside `/home/app-manager/applications` are backed up to preserve configuration files like `.env` and `docker-compose.yml`.
+
+2. To backup Docker volumes associated with an application:
+
+   - Create a `.backup` file within your application's directory.
+   - Inside the `.backup` file, list the names of the Docker volumes you wish to backup, one per line.
+   - Alternatively, use an asterisk `*` to backup all Docker volumes for that application.
+
+The backup script will handle the creation and storage of archives according to this configuration. Backups are scheduled to run every night.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Accessing Admin Endpoints
+
+The server uses Authentik as an SSO provider for secure access to administrative applications. The following admin endpoints are available (replace `example.com` with your `DOMAIN_NAME`):
+
+- **Traefik Dashboard**: `https://traefik.example.com`
+- **DBeaver**: `https://dbeaver.example.com`
+
+These endpoints require authentication via Authentik and are accessible only to authorized user groups.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Custom Error Pages
+
+The setup includes custom error handling. Instead of displaying default Traefik error pages, users see customized pages with relevant error codes.
+
+![Error Page for a 404 service not found][error-pages-screenshot]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -214,31 +235,39 @@ Below is an overview of the key directories and files in this server configurati
 
 ```
 .
-├── .github/                  # GitHub-specific configurations and resources.
-│   └── ISSUE_TEMPLATE/       # Templates for bug reports and feature requests.
+├── authentik/                # Authentik SSO provider configuration.
+│   ├── certs/                # Certificates for Authentik.
+│   ├── custom-templates/     # Custom templates for Authentik.
+│   ├── docker-compose.yml    # Docker Compose file to set up Authentik.
+│   └── media/                # Media assets for Authentik.
 ├── backup/                   # Backup scripts and logs.
+│   ├── cron_backup.sh        # The backup script.
 │   ├── logs/                 # Directory in which backup script logs are written.
-│   └── cron_backup.sh        # The backup script.
-├── dbeaver/                  # Dbeaver docker setup for database management.
+│   └── restore_backup.sh     # Script to restore backups.
+├── dbeaver/                  # DBeaver Docker setup for database management.
+│   ├── docker-compose.yml    # Docker Compose file to set up DBeaver.
+│   └── workspace/            # Workspace for DBeaver configuration and data.
 ├── docs/                     # Project documentation and resources.
-│   └── image/                # Images used to illustrate the documentation.
-├── monitoring/               # Monitoring configuration files and docker compose.
-│   └── config/               # YML configuration files of the monitoring tools.
+│   ├── images/               # Images used to illustrate the documentation.
+│   └── install.md            # Installation guide for the project.
+├── monitoring/               # Monitoring configuration files and Docker Compose.
+├── nixos/                    # NixOS configuration files.
+│   ├── configuration.nix     # Main NixOS configuration file.
+│   └── zsh.nix               # Zsh configuration for NixOS.
 ├── traefik/                  # Traefik reverse proxy configuration.
-│   ├── auth-http-users/      # HTTP Basic Auth users and passwords.
-│   ├── certificates/         # SSL Let's Encrypt certificates for HTTPS.
-│   ├── config/               # Dynamic configuration.
-│   │   ├── https.yml         # SSL layer and HSTS config.
-│   │   └── middlewares.yml   # HTTP Basic Auth and IP whitelist config.
-│   ├── docker-compose.yml    # Docker Compose file to set up Traefik.
-│   └── traefik.yml           # Static configuration.
-├── .env                      # Your personal environment variables, do not commit
+│   ├── certificates/         # SSL Let's Encrypt certificates for HTTPS.
+│   ├── config/               # Dynamic configuration.
+│   │   ├── https.yml         # SSL layer and HSTS config.
+│   │   └── middlewares.yml   # Middleware configurations.
+│   ├── docker-compose.yml    # Docker Compose file to set up Traefik.
+│   └── traefik.yml           # Static configuration for Traefik.
 ├── .env.example              # Example environment variables setup.
 ├── .gitignore                # Specifies files to be ignored by Git.
-└── README.md                 # High level project documentation.
+├── LICENSE                   # License for the project.
+└── README.md                 # High-level project documentation.
 ```
 
-This structure provides a clear and organized view of the various components of the server setup, from the reverse proxy to monitoring and backup systems.
+This structure provides a clear and organized view of the various components of the server setup, from the reverse proxy to monitoring, backup systems, and NixOS configurations.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -276,7 +305,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Thomas Ritaine - [@ai_art_tv](https://twitter.com/ai_art_tv) - thomas@ritaine.com
+Thomas Ritaine - [@ai_art_tv](https://twitter.com/ai_art_tv) - <thomas@ritaine.com>
 
 Project Link: [https://github.com/ThomasRitaine/server-config](https://github.com/ThomasRitaine/server-config)
 
@@ -288,9 +317,11 @@ Project Link: [https://github.com/ThomasRitaine/server-config](https://github.co
 
 Special thanks to the following resources and tools that have played a significant role in the development of this server configuration:
 
+- [NixOS Community](https://nixos.org/) - For the powerful and declarative NixOS operating system, providing stability and ease of configuration.
+- [Authentik](https://goauthentik.io/) - For the excellent SSO solution that simplifies authentication across services.
 - [#Prox-i](https://www.prox-i.pf/) - A communication agency for whom the initial setup was developed, which inspired continuous improvement and led to the current configuration.
 - [Docker](https://www.docker.com/) - For the containerization platform that makes it possible to isolate applications.
-- [Traefik](https://traefik.io/) - For the excellent reverse proxy, ease of configuration and automatic SSL setup.
+- [Traefik](https://traefik.io/) - For the excellent reverse proxy, ease of configuration, and automatic SSL setup.
 - [Let's Encrypt](https://letsencrypt.org/) - For providing free SSL certificates to secure web communications.
 
 This project wouldn't have been possible without these invaluable resources.
@@ -298,7 +329,7 @@ This project wouldn't have been possible without these invaluable resources.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+<!-- Badges -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/ThomasRitaine/server-config.svg?style=for-the-badge
 [contributors-url]: https://github.com/ThomasRitaine/server-config/graphs/contributors
@@ -312,14 +343,19 @@ This project wouldn't have been possible without these invaluable resources.
 [license-url]: https://github.com/ThomasRitaine/server-config/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/thomas-ritaine
-[file-list-screenshot]: docs/image/file_list.webp
+[server-terminal]: docs/images/server-terminal.webp
+[error-pages-screenshot]: docs/images/error-pages-404.webp
+[NixOS-shield]: https://img.shields.io/badge/NixOS-5277C3?style=for-the-badge&logo=nixos&logoColor=white
+[NixOS-url]: https://nixos.org/
 [Docker-shield]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
 [Traefik-shield]: https://img.shields.io/badge/Traefik%20Proxy-24A1C1?logo=traefikproxy&logoColor=fff&style=for-the-badge
 [Traefik-url]: https://traefik.io/
-[LetsEncrypt-shield]: https://img.shields.io/badge/Let's%20Encrypt-003A70?logo=letsencrypt&logoColor=fff&style=for-the-badge
-[LetsEncrypt-url]: https://letsencrypt.org/
-[Bash-shield]: https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white
+[Authentik-shield]: https://img.shields.io/badge/Authentik-FD4B2D?style=for-the-badge&logo=authentik&logoColor=white
+[Authentik-url]: https://goauthentik.io/
+[Zsh-shield]: https://img.shields.io/badge/Zsh-F15A24?logo=zsh&logoColor=fff&style=for-the-badge
+[Zsh-url]: https://en.wikipedia.org/wiki/Z_shell
+[Bash-shield]: https://img.shields.io/badge/Shell_Script-121011?style=for-the-badge&logo=gnu-bash&logoColor=white
 [Bash-url]: https://www.gnu.org/software/bash/
-[S3-shield]: https://img.shields.io/badge/Amazon%20S3-569A31?logo=amazons3&logoColor=fff&style=for-the-badge
+[S3-shield]: https://img.shields.io/badge/S3%20Compatible%20Storage-569A31?logo=amazons3&logoColor=fff&style=for-the-badge
 [S3-url]: https://aws.amazon.com/s3/
