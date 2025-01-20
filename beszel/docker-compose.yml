@@ -1,0 +1,27 @@
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    restart: unless-stopped
+    volumes:
+      - ./beszel_data:/beszel_data
+    networks:
+      - default
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.beszel.rule=Host(`beszel.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.beszel.middlewares=auth-require-login@file,auth-require-group-admin-vps@file"
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
+
+networks:
+  default:
+  traefik:
+    external: true
