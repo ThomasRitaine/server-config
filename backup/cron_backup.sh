@@ -1,92 +1,103 @@
-#!/usr/bin/env zsh
+#!/bin/bash
 
-# Script: restore_backup.sh
-# Usage: Restore a backup archive for a specific application.
-# ------------------------------------------------------------------------------------
-# This script restores a backup for a specified application. The backup archive
-# (in tar.gz format) should be located in the directory of the application.
-#
-# Prerequisites:
-# - The backup archive must be named following the pattern <app_name>-*.tar.gz and
-#   placed in the application's directory.
-# - It is recommended to backup the current application directory and volumes before running this script.
-# - The application directory and volumes will be restored from the backup, potentially overwriting existing data.
-#
-# Example Usage:
-# To restore backup for an application named "my-app", run:
-#     zsh ~/server-config/backup/restore_backup.sh my-app
-# ------------------------------------------------------------------------------------
+# Load environment variables.
+. "$HOME/server-config/.env"
 
 # Define a function to log with timestamp.
 log_with_timestamp() {
-  TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-  echo "[$TIMESTAMP] $1"
+    TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+    echo "[$TIMESTAMP] $1"
 }
 
-# Application name passed as an argument
-APP_NAME="$1"
-
-# Check if application name is provided
-if [ -z "$APP_NAME" ]; then
-  log_with_timestamp "Error: No application name provided."
-  echo "Usage: $0 <app_name>"
-  exit 1
-fi
-
-# Define the application directory
-APP_DIR="$HOME/applications/$APP_NAME"
-
-# Check if the application directory exists
-if [ ! -d "$APP_DIR" ]; then
-  log_with_timestamp "Error: Application directory for $APP_NAME does not exist."
-  exit 1
-fi
-
-# Assuming the backup file is named after the application and located in the same directory
-BACKUP_FILEPATH=$(ls "$APP_DIR"/"$APP_NAME"-*.tar.gz 2>/dev/null | head -n 1)
-
-# Check for the backup file.
-if [ ! -f "$BACKUP_FILEPATH" ]; then
-  log_with_timestamp "$APP_NAME: No backup file found in $APP_DIR"
-  exit 1
-fi
-
-# Extract the backup
-TMP_DIR=$(mktemp -d)
-log_with_timestamp "$APP_NAME: Extracting backup..."
-tar -xzf "$BACKUP_FILEPATH" -C "$TMP_DIR"
-
-# Assuming the backup directory is named like $APP_NAME-<timestamp>
-BACKUP_CONTENT_DIR="$TMP_DIR"/*
-
-# Restore the application directory
-if [ -d "$BACKUP_CONTENT_DIR/app_dir" ]; then
-  log_with_timestamp "$APP_NAME: Restoring application directory..."
-  # Backup current app directory just in case
-  mv "$APP_DIR" "${APP_DIR}.bak.$(date +"%Y%m%d%H%M%S")"
-  mkdir -p "$APP_DIR"
-  cp -a "$BACKUP_CONTENT_DIR/app_dir/." "$APP_DIR/"
+# Determine the lifecycle - Daily or Weekly.
+DAY_OF_WEEK=$(date +"%u")  # Monday is 1, Sunday is 7.
+if [ "$DAY_OF_WEEK" -eq "7" ]; then
+    LIFECYCLE="weekly"
 else
-  log_with_timestamp "$APP_NAME: No application directory found in backup."
+    LIFECYCLE="daily"
 fi
 
-# Restore volumes
-if [ -d "$BACKUP_CONTENT_DIR/volumes" ]; then
-  for VOLUME_DIR in "$BACKUP_CONTENT_DIR/volumes/"*; do
-    VOLUME_NAME=$(basename "$VOLUME_DIR")
-    log_with_timestamp "$APP_NAME: Restoring volume $VOLUME_NAME..."
-    # Remove existing volume data
-    docker volume rm "$VOLUME_NAME" >/dev/null 2>&1 || true
-    # Create a new empty volume
-    docker volume create "$VOLUME_NAME" >/dev/null
-    # Restore data into the volume
-    docker run --rm -v "$VOLUME_NAME":/destination -v "$VOLUME_DIR":/source busybox sh -c "cp -a /source/. /destination/"
-  done
-else
-  log_with_timestamp "$APP_NAME: No volumes found in backup."
-fi
+# Backup directory path
+APPS_DIR="$HOME/applications"
 
-# Cleanup temporary directory
-rm -rf "$TMP_DIR"
+# Iterate over all applications.
+for APP_DIR in $APPS_DIR/*; do
+    if [ -d "$APP_DIR" ]; then
+        APP_NAME=$(basename $APP_DIR)
+        
+        # Check for the .backup file.
+        if [ ! -f "$APP_DIR/.backup" ]; then
+            log_with_timestamp "$APP_NAME: No .backup file, skipping..."
+            continue
+        fi
+        
+        # Check for the presence of docker-compose files
+        COMPOSE_FILES=""
+        if [ -f "$APP_DIR/docker-compose.yml" ] && [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
+            # Both files exist
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.yml -f $APP_DIR/docker-compose.prod.yml"
+        elif [ -f "$APP_DIR/docker-compose.yml" ]; then
+            # Only docker-compose.yml exists
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.yml"
+        elif [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
+            # Only docker-compose.prod.yml exists
+            COMPOSE_FILES="-f $APP_DIR/docker-compose.prod.yml"
+        else
+            log_with_timestamp "$APP_NAME: No docker-compose file found, skipping..."
+            continue
+        fi
 
-log_with_timestamp "$APP_NAME: Restoration complete."
+        # Get list of volume names
+        ALL_VOLUMES=$(docker compose $COMPOSE_FILES config --format json | jq -r '.volumes[].name')
+        
+        # Convert ALL_VOLUMES to an array
+        IFS=$'\n' read -rd '' -a ALL_VOLUMES_ARRAY <<< "$ALL_VOLUMES"
+
+        # Extract volume details
+        VOLUMES_TO_BACKUP=()
+        if [ -f "$APP_DIR/.backup" ]; then
+            while IFS= read -r line; do
+                if [ "$line" = "*" ]; then
+                    VOLUMES_TO_BACKUP=("${ALL_VOLUMES_ARRAY[@]}")
+                    break
+                else
+                    for volume in "${ALL_VOLUMES_ARRAY[@]}"; do
+                        if [ "$volume" == "$line" ]; then
+                            VOLUMES_TO_BACKUP+=("$volume")
+                        fi
+                    done
+                fi
+            done < "$APP_DIR/.backup"
+        fi
+
+        TIMESTAMP=$(date +"%Y-%m-%d-%H-%M")
+        BACKUP_FILENAME="$APP_NAME-$TIMESTAMP"
+        BACKUP_FILEPATH="$APP_DIR/$BACKUP_FILENAME.tar.gz"
+
+        TMP_DIR=$(mktemp -d)
+        chmod 755 $TMP_DIR
+        mkdir -p $TMP_DIR/$BACKUP_FILENAME
+
+        # Backup and archive selected volumes.
+        for VOLUME in "${VOLUMES_TO_BACKUP[@]}"; do
+            log_with_timestamp "$APP_NAME: Backing up $VOLUME..."
+            docker run --rm -v $VOLUME:/source -v $TMP_DIR:/backup busybox sh -c "cp -R /source /backup/$BACKUP_FILENAME/$VOLUME && chown -R $(id -u):$(id -g) /backup/$BACKUP_FILENAME/$VOLUME"
+        done
+        
+        # Archive all volume backups.
+        log_with_timestamp "$APP_NAME: Creating archive..."
+        tar -czf $BACKUP_FILEPATH -C $TMP_DIR .
+
+        # Push to S3.
+        log_with_timestamp "$APP_NAME: Pushing to S3..."
+        aws s3 cp $BACKUP_FILEPATH s3://$S3_BUCKET_NAME/$LIFECYCLE/$APP_NAME/ --endpoint-url=$S3_ENDPOINT --quiet
+
+        # Clean up local older archives (keep the latest).
+        find $APP_DIR -type f -name "$APP_NAME-*.tar.gz" ! -name $BACKUP_FILENAME.tar.gz -delete
+        
+        # Cleanup the temporary directory.
+        rm -rf $TMP_DIR
+
+        log_with_timestamp "$APP_NAME: Backup complete."
+    fi
+done
