@@ -3,7 +3,7 @@ services:
     image: henrygd/beszel:latest
     restart: unless-stopped
     volumes:
-      - ./beszel_data:/beszel_data
+      - ./data:/beszel_data
     networks:
       - default
       - traefik
