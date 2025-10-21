@@ -7,6 +7,16 @@
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
+---
+
+> **⚠️ ARCHIVED REPOSITORY**
+>
+> This repository has been archived and is no longer maintained. The server configuration has been migrated to a full NixOS declarative setup.
+>
+> **Please visit the new repository:** [ThomasRitaine/nixos-config](https://github.com/ThomasRitaine/nixos-config)
+
+---
+
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
